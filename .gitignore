@@ -1,0 +1,12 @@
+# Ignore raw data (User Requirement)
+data/raw/
+
+# Recommended: Ignore processed data and models (MLOps Best Practice)
+data/processed/
+models/*.joblib
+
+# Python cache files
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
