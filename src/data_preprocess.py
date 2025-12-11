@@ -3,38 +3,50 @@ import pandas as pd
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 
-# Define paths
-RAW_PATH = os.path.join('data', 'raw')
-PROCESSED_PATH = os.path.join('data', 'processed')
+# --- CONFIGURATION ---
+RAW_DATA_PATH = os.path.join("data", "raw")
+PROCESSED_DATA_PATH = os.path.join("data", "processed")
+RAW_FILENAME = "iris.csv"
 
-os.makedirs(RAW_PATH, exist_ok=True)
-os.makedirs(PROCESSED_PATH, exist_ok=True)
+# Ensure directories exist
+os.makedirs(RAW_DATA_PATH, exist_ok=True)
+os.makedirs(PROCESSED_DATA_PATH, exist_ok=True)
 
-def preprocess():
-    print("Loading data...")
-    # 1. Simulate Data Ingestion (Save to Raw)
-    iris = load_iris()
-    df = pd.DataFrame(iris.data, columns=iris.feature_names)
-    df['target'] = iris.target
+def load_data():
+    """Simulates loading raw data. If file doesn't exist, download it."""
+    file_path = os.path.join(RAW_DATA_PATH, RAW_FILENAME)
     
-    raw_file = os.path.join(RAW_PATH, 'iris_raw.csv')
-    df.to_csv(raw_file, index=False)
-    print(f"Raw data saved to {raw_file}")
+    if not os.path.exists(file_path):
+        print(f"Raw data not found. Downloading to {file_path}...")
+        iris = load_iris()
+        df = pd.DataFrame(iris.data, columns=iris.feature_names)
+        df['target'] = iris.target
+        df.to_csv(file_path, index=False)
+    else:
+        print(f"Loading raw data from {file_path}...")
+        df = pd.read_csv(file_path)
+    
+    return df
 
-    # 2. Processing (Split Data)
+def process_data(df):
+    """Splits data into train and test sets."""
     print("Splitting data...")
     X = df.drop('target', axis=1)
     y = df['target']
-
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-    # 3. Save Processed Data
-    X_train.to_csv(os.path.join(PROCESSED_PATH, 'X_train.csv'), index=False)
-    X_test.to_csv(os.path.join(PROCESSED_PATH, 'X_test.csv'), index=False)
-    y_train.to_csv(os.path.join(PROCESSED_PATH, 'y_train.csv'), index=False)
-    y_test.to_csv(os.path.join(PROCESSED_PATH, 'y_test.csv'), index=False)
     
-    print(f"Processed data saved to {PROCESSED_PATH}")
+    # 80% Train, 20% Test
+    return train_test_split(X, y, test_size=0.2, random_state=42)
+
+def save_data(X_train, X_test, y_train, y_test):
+    """Saves processed data to disk."""
+    print(f"Saving processed files to {PROCESSED_DATA_PATH}...")
+    X_train.to_csv(os.path.join(PROCESSED_DATA_PATH, "train_features.csv"), index=False)
+    X_test.to_csv(os.path.join(PROCESSED_DATA_PATH, "test_features.csv"), index=False)
+    y_train.to_csv(os.path.join(PROCESSED_DATA_PATH, "train_target.csv"), index=False)
+    y_test.to_csv(os.path.join(PROCESSED_DATA_PATH, "test_target.csv"), index=False)
+    print("Preprocessing complete!")
 
 if __name__ == "__main__":
-    preprocess()
+    df = load_data()
+    X_train, X_test, y_train, y_test = process_data(df)
+    save_data(X_train, X_test, y_train, y_test)
